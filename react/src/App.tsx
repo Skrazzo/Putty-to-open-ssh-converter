@@ -1,23 +1,44 @@
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
-import { Shield, Download, Github, Upload, AlertTriangle } from "lucide-react";
+import { Shield, Github, Upload, AlertTriangle, Ban } from "lucide-react";
 import { useForm, useStore } from "@tanstack/react-form";
+import { z } from "zod";
+
+const maxFileSize = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB);
 
 interface UploadForm {
     key: File | null;
 }
 
 export default function KeyConverterPage() {
+    const FormScheme = z.object({
+        key: z
+            .instanceof(File, { message: "Please select a file" })
+            .refine((file) => file.size <= maxFileSize * 1024 * 1024, {
+                message: `File must be below ${maxFileSize} MB`,
+            })
+            .refine((file) => file.name.split(".").pop()?.toLowerCase() === "ppk", {
+                message: "File must be putty format (.ppk)",
+            }),
+    });
+
+    const uploadForm = (form: FormData): void => {};
+
     const form = useForm({
         defaultValues: {
             key: null,
         } as UploadForm,
-        onSubmit(props) {
-            console.log(props);
+        onSubmit({ value }) {
+            // uploadForm(form.Field);
+            console.log(value);
+        },
+        validators: {
+            onSubmit: FormScheme,
         },
     });
 
+    // Basically use state, but for form values
     const { key } = useStore(form.store, (state) => state.values);
 
     return (
@@ -50,6 +71,9 @@ export default function KeyConverterPage() {
                             <form.Field
                                 name="key"
                                 children={(field) => {
+                                    const fieldErrors = field.state.meta.errors;
+                                    console.log(fieldErrors);
+
                                     return (
                                         <>
                                             <input
@@ -65,15 +89,26 @@ export default function KeyConverterPage() {
                                                 htmlFor={field.name}
                                                 className="cursor-pointer flex flex-col items-center justify-center gap-2"
                                             >
-                                                <Upload className="h-8 w-8 text-gray-500" />
-                                                <span className="font-medium">
-                                                    {key ? key.name : "Click to select a PPK file"}
-                                                </span>
-                                                <span className="text-sm text-gray-500">
-                                                    {key
-                                                        ? `${(key.size / 1024).toFixed(2)} KB`
-                                                        : "or drag and drop it here"}
-                                                </span>
+                                                {fieldErrors.length > 0 ? (
+                                                    <>
+                                                        <Ban className="h-8 w-8 text-red-400" />
+                                                        {fieldErrors.map((err) => (
+                                                            <p className="text-red-400">{err?.message}</p>
+                                                        ))}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Upload className="h-8 w-8 text-gray-500" />
+                                                        <span className="font-medium">
+                                                            {key ? key.name : "Click to select a PPK file"}
+                                                        </span>
+                                                        <span className="text-sm text-gray-500">
+                                                            {key
+                                                                ? `${(key.size / 1024).toFixed(2)} KB`
+                                                                : "or drag and drop it here"}
+                                                        </span>
+                                                    </>
+                                                )}
                                             </label>
                                         </>
                                     );
@@ -81,7 +116,7 @@ export default function KeyConverterPage() {
                             />
                         </div>
 
-                        <Button onClick={() => console.log("Handle convert")} disabled={true} className="w-full">
+                        <Button onClick={() => console.log("Handle convert")} disabled={!key} className="w-full">
                             Convert to PEM
                             {/* {isConverting ? "Converting..." : "Convert to PEM"} */}
                         </Button>
@@ -94,20 +129,6 @@ export default function KeyConverterPage() {
                                 <AlertDescription>{"Error appeared"}</AlertDescription>
                             </Alert>
                         )}
-
-                        {/* {pemKey && ( */}
-                        {/*     <div className="space-y-4"> */}
-                        {/*         <div className="bg-black/[.05] dark:bg-white/[.06] p-4 rounded-md"> */}
-                        {/*             <pre className="text-xs overflow-x-auto whitespace-pre-wrap font-mono"> */}
-                        {/*                 {pemKey.substring(0, 100)}... */}
-                        {/*             </pre> */}
-                        {/*         </div> */}
-                        {/*         <Button onClick={handleDownload} className="w-full" variant="outline"> */}
-                        {/*             <Download className="mr-2 h-4 w-4" /> */}
-                        {/*             Download PEM Key */}
-                        {/*         </Button> */}
-                        {/*     </div> */}
-                        {/* )} */}
                     </form>
                 </CardContent>
 
