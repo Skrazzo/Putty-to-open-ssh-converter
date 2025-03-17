@@ -4,8 +4,12 @@ import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { Shield, Github, Upload, AlertTriangle, Ban } from "lucide-react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { z } from "zod";
+import axios from "axios";
 
 const maxFileSize = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB);
+const backendURL = import.meta.env.VITE_BACKEND_URL;
+
+axios.defaults.baseURL = backendURL;
 
 interface UploadForm {
     key: File | null;
@@ -23,18 +27,26 @@ export default function KeyConverterPage() {
             }),
     });
 
-    const uploadForm = (form: FormData): void => {};
+    const uploadForm = (form: UploadForm): void => {
+        // const formData = new toFormData
+        axios
+            .post("/convert", form, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            })
+            .then((res) => console.log(res.data));
+    };
 
     const form = useForm({
         defaultValues: {
             key: null,
         } as UploadForm,
         onSubmit({ value }) {
-            // uploadForm(form.Field);
-            console.log(value);
+            uploadForm(value);
         },
         validators: {
-            onSubmit: FormScheme,
+            onChange: FormScheme,
         },
     });
 
