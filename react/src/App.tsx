@@ -4,7 +4,12 @@ import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 import { Shield, Github, Upload, AlertTriangle, Ban } from "lucide-react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { z } from "zod";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { Toaster } from "./components/ui/sonner";
+import { toast } from "sonner";
+import { useState } from "react";
+import CircleResize from "./components/spinner/CircleResize";
+import { saveAs } from "file-saver";
 
 const maxFileSize = Number(import.meta.env.VITE_MAX_FILE_SIZE_MB);
 const backendURL = import.meta.env.VITE_BACKEND_URL;
@@ -16,6 +21,8 @@ interface UploadForm {
 }
 
 export default function KeyConverterPage() {
+    const [loading, setLoading] = useState<boolean>(false);
+
     const FormScheme = z.object({
         key: z
             .instanceof(File, { message: "Please select a file" })
@@ -27,34 +34,68 @@ export default function KeyConverterPage() {
             }),
     });
 
-    const uploadForm = (form: UploadForm): void => {
-        // const formData = new toFormData
-        axios
-            .post("/convert", form, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            })
-            .then((res) => console.log(res.data));
-    };
-
     const form = useForm({
         defaultValues: {
             key: null,
         } as UploadForm,
         onSubmit({ value }) {
             uploadForm(value);
+            // form.reset();
         },
         validators: {
             onChange: FormScheme,
         },
     });
 
+    const uploadForm = (form: UploadForm): void => {
+        setLoading(true);
+
+        axios
+            .post("/convert", form, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                responseType: "blob",
+            })
+            .then(async (res) => {
+                // Create a new Blob with the correct MIME type
+                const blob = new Blob([res.data], { type: "application/zip" });
+
+                // Use saveAs with the blob and filename
+                saveAs(blob, "Converted keys.zip");
+
+                toast("Converted", {
+                    description: "Your keys were converted and downloaded",
+                    className: "success-toast",
+                });
+            })
+            .catch((err) => {
+                if (err instanceof AxiosError) {
+                    toast(`${err.response?.statusText || "Network error"} - ${err.status} code`, {
+                        description: err.response?.data.error || "Dev didn't give try catch error",
+                        className: "error-toast",
+                    });
+                } else {
+                    // Unknown error
+                    toast("Unknown error", {
+                        className: "error-toast",
+                        description: "Contact developer, better luck in the console",
+                    });
+                    console.log(err);
+                }
+            })
+            .finally(() => {
+                // set loading as false, and reset form
+                setLoading(false);
+            });
+    };
+
     // Basically use state, but for form values
     const { key } = useStore(form.store, (state) => state.values);
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-3xl">
+            <Toaster />
             <Card className="shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">PPK to PEM Key Converter</CardTitle>
@@ -128,19 +169,10 @@ export default function KeyConverterPage() {
                             />
                         </div>
 
-                        <Button onClick={() => console.log("Handle convert")} disabled={!key} className="w-full">
-                            Convert to PEM
-                            {/* {isConverting ? "Converting..." : "Convert to PEM"} */}
+                        <Button disabled={!key} className="w-full">
+                            {loading && <CircleResize />}
+                            {loading ? "Converting..." : "Convert to PEM"}
                         </Button>
-
-                        {/* Show error */}
-                        {false && (
-                            <Alert variant="destructive">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertTitle>Error</AlertTitle>
-                                <AlertDescription>{"Error appeared"}</AlertDescription>
-                            </Alert>
-                        )}
                     </form>
                 </CardContent>
 

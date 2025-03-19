@@ -5,11 +5,13 @@
     },
     "dependencies": {
         "@hono/zod-validator": "^0.4.3",
+        "archiver": "^7.0.1",
         "hono": "^4.7.4",
         "uuid": "^11.1.0",
         "zod": "^3.24.2"
     },
     "devDependencies": {
+        "@types/archiver": "^6.0.3",
         "@types/bun": "latest"
     }
 }

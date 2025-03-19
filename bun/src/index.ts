@@ -2,9 +2,10 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { v4 as uuidv4 } from "uuid";
-import { convertToOpenSHH } from "../utils/convert";
+import { convertPuttyKeyToOpenSSH } from "../utils/convert";
+import { unlink } from "fs/promises";
 
 const app = new Hono();
 const maxFileSize = Number(process.env.MAX_FILE_UPLOAD_MB);
@@ -41,10 +42,21 @@ app.post("/convert", zValidator("form", UploadScheme), async (c) => {
 
     try {
         // convert file to open ssh file
-        const convertedName = await convertToOpenSHH(resolve(path));
+        const zippedPath = await convertPuttyKeyToOpenSSH(resolve(path));
 
-        // Return success message
-        return c.json({ success: true, message: "File has been converted" });
+        // Return zip file to the frontend
+        const zipFile = await Bun.file(zippedPath).arrayBuffer();
+        const normalFileName = basename(zippedPath).split("_")[1];
+
+        // After we have zip file in the memory, lets delete it from filesystem
+        await unlink(zippedPath);
+
+        return new Response(zipFile, {
+            headers: {
+                "Content-type": "application/octet-stream",
+                "Content-Disposition": `attachment; filename="${normalFileName}"`,
+            },
+        });
     } catch (err) {
         if (err instanceof Error) {
             return c.json({ success: false, error: { ...err } });
