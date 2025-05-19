@@ -65,6 +65,7 @@ export default function KeyConverterPage() {
                 saveAs(blob, "Converted keys.zip");
 
                 toast("Converted", {
+                    duration: 60 * 1000 * 5,
                     description: "Your keys were converted and downloaded",
                     className: "success-toast",
                 });

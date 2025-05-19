@@ -124,6 +124,10 @@
     div[data-title] {
         color: green !important;
     }
+
+    div[data-description] {
+        color: rgba(0, 0, 0, 0.75) !important;
+    }
 }
 
 .error-toast {
@@ -131,5 +135,9 @@
 
     div[data-title] {
         color: red !important;
+    }
+
+    div[data-description] {
+        color: rgba(0, 0, 0, 0.75) !important;
     }
 }
