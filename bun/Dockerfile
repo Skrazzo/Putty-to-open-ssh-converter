@@ -6,17 +6,34 @@ WORKDIR /app
 FROM base AS deps
 WORKDIR /app
 
+# Required for putty key convertion
+RUN apk add --no-cache --update putty
+
+# Install node dependencies
 COPY package.json bun.lock ./
 
 RUN bun install --frozen-lockfile
 
 # -------- DEVELOPMENT STAGE --------
-FROM deps AS development
+FROM base AS development
 WORKDIR /app
 
 # Copy dependencies from the 'deps' stage
-COPY --from=deps /app/node_modules ./
+COPY --from=deps /app/node_modules ./node_modules
 # Copy the rest of the source code
 COPY . .
 # The command to run your development server.
 CMD ["bun", "run", "dev"]
+
+# -------- PRODUCTION STAGE --------
+FROM deps AS production
+WORKDIR /app
+
+# Copy dependencies from the 'deps' stage
+COPY --from=deps /app/node_modules ./node_modules
+# Copy rest
+COPY . .
+
+EXPOSE 3000
+
+CMD ["bun", "run", "src/index.ts"]

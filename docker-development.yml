@@ -12,6 +12,9 @@ services:
       - ./bun:/app
       # NOT to overwrite the container's /app/node_modules with anything
       - /app/node_modules
+    environment:
+      - MAX_FILE_UPLOAD_MB=2 # max file size in MB
+      - FRONTEND_URL=http://localhost:5173 # Url to the frontend
   frontend:
     container_name: putty-frontend-dev
     build:
@@ -28,3 +31,6 @@ services:
       # NOT to overwrite the container's /app/node_modules with anything
       # from the host. This prevents OS-related binary issues.
       - /app/node_modules
+    environment:
+      - VITE_BACKEND_URL=http://localhost:3000 # URL to the backend
+      - VITE_MAX_FILE_SIZE_MB=2 # Max file size in MB

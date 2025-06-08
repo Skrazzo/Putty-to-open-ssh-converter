@@ -1,0 +1,34 @@
+services:
+  backend:
+    container_name: putty-backend
+    build:
+      context: ./bun
+      dockerfile: Dockerfile
+      # We specify the 'development' stage as our target
+      target: production
+    ports:
+      - 3000:3000
+    networks:
+      - mynetwork
+    environment:
+      - MAX_FILE_UPLOAD_MB=2 # max file size in MB
+      - FRONTEND_URL=http://localhost:5173 # Url to the frontend
+  caddy:
+    container_name: putty-converter
+    build:
+      context: ./react
+      dockerfile: Dockerfile
+      target: production
+      args: # build arguments for bun run build
+        VITE_BACKEND_URL: http://localhost:8000/api # URL to the backend
+        VITE_MAX_FILE_SIZE_MB: 2 # Max file size in MB
+    ports:
+      - 8000:80
+    networks:
+      - mynetwork
+    depends_on:
+      - backend
+
+networks:
+  mynetwork:
+    driver: bridge

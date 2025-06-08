@@ -1,0 +1,18 @@
+{
+    admin off
+    auto_https off
+}
+
+:80 {
+    # Route API calls to the backend service
+    handle_path /api/* {
+        reverse_proxy backend:3000
+    }
+
+    # Serve the React app for all other requests
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}
