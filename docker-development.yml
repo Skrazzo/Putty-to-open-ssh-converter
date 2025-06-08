@@ -1,0 +1,30 @@
+services:
+  backend:
+    container_name: putty-backend-dev
+    build:
+      context: ./bun
+      dockerfile: Dockerfile
+      # We specify the 'development' stage as our target
+      target: development
+    ports:
+      - 3000:3000
+    volumes:
+      - ./bun:/app
+      # NOT to overwrite the container's /app/node_modules with anything
+      - /app/node_modules
+  frontend:
+    container_name: putty-frontend-dev
+    build:
+      context: ./react
+      dockerfile: Dockerfile
+      # We specify the 'development' stage as our target
+      target: development
+    ports:
+      - 5173:5173
+    volumes:
+      - ./react:/app
+      # This is a crucial optimization:
+      # It creates an anonymous volume for node_modules and tells Docker
+      # NOT to overwrite the container's /app/node_modules with anything
+      # from the host. This prevents OS-related binary issues.
+      - /app/node_modules

@@ -1,7 +1,7 @@
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
-import { Shield, Github, Upload, AlertTriangle, Ban } from "lucide-react";
+import { Shield, Github, Upload, Ban } from "lucide-react";
 import { useForm, useStore } from "@tanstack/react-form";
 import { z } from "zod";
 import axios, { AxiosError } from "axios";
