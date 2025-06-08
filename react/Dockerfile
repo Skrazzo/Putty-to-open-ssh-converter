@@ -32,10 +32,12 @@ COPY . .
 # Default built environment variables
 ARG VITE_MAX_FILE_SIZE_MB=2
 ARG VITE_BACKEND_URL=http://localhost:8000/api
+ARG VITE_BASE_URL=/
 
 # Create production .env file
 RUN echo "VITE_BACKEND_URL=${VITE_BACKEND_URL}" > .env
 RUN echo "VITE_MAX_FILE_SIZE_MB=${VITE_MAX_FILE_SIZE_MB}" >> .env
+RUN echo "VITE_BASE_URL=${VITE_BASE_URL}" >> .env
 
 # Build bun react app
 RUN bun run build

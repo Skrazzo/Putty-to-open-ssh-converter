@@ -22,6 +22,7 @@ services:
       args: # build arguments for bun run build
         VITE_BACKEND_URL: http://localhost:8000/api # URL to the backend
         VITE_MAX_FILE_SIZE_MB: 2 # Max file size in MB
+        VITE_BASE_URL: / # If you want to host app on the subpath /putty for example
     ports:
       - 8000:80
     networks:
