@@ -15,7 +15,6 @@ As someone who exclusively uses OpenSSH keys, I found it annoying to install PuT
 
 ## ✨ Features
 
-- Easy drag-and-drop or file selection interface
 - Instant conversion from PPK to OpenSSH format
 - Returns both private and public keys
 - Secure by design - all files are deleted after conversion
@@ -101,41 +100,27 @@ caddy:
       VITE_BASE_URL: /
 ```
 
-## 🔒 Hosting with Caddy on the Host Machine
+## 🔒 Reverse proxy with Caddy on the Host Machine
 
-### Example: Hosting on Subpath
+### Example: Proxy on Subpath
 
 Create a Caddyfile on your host:
 
 ```
 example.com {
-    handle_path /putty/* {
-        root * /path/to/your/app
-        try_files {path} /index.html
-        file_server
-    }
-
-    handle_path /putty/api/* {
-        reverse_proxy localhost:3000
+    handle_path /putty* {
+        reverse_proxy localhost:8000
     }
 }
 ```
 
-### Example: Hosting on Subdomain
+### Example: Proxy on Subdomain
 
 Create a Caddyfile on your host:
 
 ```
 putty.example.com {
-    handle_path /api/* {
-        reverse_proxy localhost:3000
-    }
-
-    handle {
-        root * /path/to/your/app
-        try_files {path} /index.html
-        file_server
-    }
+    reverse_proxy: localhost:8000
 }
 ```
 
@@ -166,7 +151,3 @@ putty.example.com {
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
