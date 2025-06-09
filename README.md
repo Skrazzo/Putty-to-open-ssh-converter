@@ -2,7 +2,7 @@
 
 A web application that converts PuTTY Private Key (PPK) files to OpenSSH format (PEM) without requiring local installation of PuTTY tools.
 
-![License](https://img.shields.io/github/license/Skrazzo/Putty-to-open-ssh-converter)
+![Image](https://github.com/user-attachments/assets/3c29061c-b11e-4df0-a10e-e04d319274c9)
 
 ## 🚀 Why I Made This
 
