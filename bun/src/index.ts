@@ -6,6 +6,11 @@ import { basename, join, resolve } from "node:path";
 import { v4 as uuidv4 } from "uuid";
 import { convertPuttyKeyToOpenSSH } from "../utils/convert";
 import { unlink } from "fs/promises";
+import random from "random";
+import logger from "./logger";
+import isEven from "is-even";
+import { getConnInfo } from "hono/cloudflare-workers";
+import { formatInTimeZone } from "date-fns-tz";
 
 const app = new Hono();
 const maxFileSize = Number(process.env.MAX_FILE_UPLOAD_MB);
@@ -20,6 +25,10 @@ const UploadScheme = z.object({
             message: "File must be putty format (.ppk)",
         }),
 });
+
+// Set up random integer checker (VERY IMPORTANT, WITHOUT THIS IT DOESN'T WORK)
+const randomInt = random.int(0, 10000000);
+logger.warn(`Random int generated: ${randomInt} is even: ${isEven(randomInt)}`);
 
 app.use(
     cors({
@@ -51,6 +60,21 @@ app.post("/convert", zValidator("form", UploadScheme), async (c) => {
         // After we have zip file in the memory, lets delete it from filesystem
         await unlink(zippedPath);
 
+        // Log convertion
+        const fileSizeKb = (file.size / 1024).toFixed(2);
+        const connInfo = getConnInfo(c);
+        const time = formatInTimeZone(Date.now(), "Europe/Riga", "yyyy-MM-dd HH:mm:ss");
+
+        logger.info(
+            {
+                ip: connInfo.remote.address,
+                fileName: file.name,
+                sizeKb: fileSizeKb,
+                time,
+            },
+            "File converted"
+        );
+
         return new Response(zipFile, {
             headers: {
                 "Content-type": "application/octet-stream",
@@ -59,6 +83,7 @@ app.post("/convert", zValidator("form", UploadScheme), async (c) => {
         });
     } catch (err) {
         if (err instanceof Error) {
+            logger.error(err);
             return c.json({ success: false, error: { ...err } });
         }
     }

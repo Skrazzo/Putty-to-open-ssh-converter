@@ -12,14 +12,12 @@ RUN apk add --no-cache --update putty
 # Install node dependencies
 COPY package.json bun.lock ./
 
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # -------- DEVELOPMENT STAGE --------
-FROM base AS development
+FROM deps AS development
 WORKDIR /app
 
-# Copy dependencies from the 'deps' stage
-COPY --from=deps /app/node_modules ./node_modules
 # Copy the rest of the source code
 COPY . .
 # The command to run your development server.

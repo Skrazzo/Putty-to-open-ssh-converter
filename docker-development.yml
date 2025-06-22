@@ -10,6 +10,7 @@ services:
       - 3000:3000
     volumes:
       - ./bun:/app
+      - ./logs:/logs
       # NOT to overwrite the container's /app/node_modules with anything
       - /app/node_modules
     environment:
