@@ -10,6 +10,8 @@ services:
       - 3000:3000
     networks:
       - mynetwork
+    volumes:
+      - ./logs:/logs
     environment:
       - MAX_FILE_UPLOAD_MB=2 # max file size in MB
       - FRONTEND_URL=http://localhost:5173 # Url to the frontend
